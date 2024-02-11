@@ -6,7 +6,7 @@ const router = Router();
 
 router.post("/", authMiddleware, handlePostReq)
 
-router.get("/todos", handleGetReq)
+router.get("/todos",authMiddleware, handleGetReq)
 
 router.put("/completed", handlePutReq)
 

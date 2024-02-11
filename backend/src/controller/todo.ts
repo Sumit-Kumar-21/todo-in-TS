@@ -39,8 +39,12 @@ async function handlePostReq(req: RequestWithUserId, res: Response) {
     })
 }
 
-async function handleGetReq(req: Request, res: Response) {
-    const todos = await prisma.todo.findMany();
+async function handleGetReq(req: RequestWithUserId, res: Response) {
+    const todos = await prisma.todo.findMany({
+        where: {
+            userId: req.userId
+        }
+    });
     res.status(StatusCode.Success).json({
         todos
     })
