@@ -1,18 +1,28 @@
-import { PrismaClient } from "@prisma/client/edge";
+import { PrismaClient } from "@prisma/client";
 import { checkSignUp, checkSignIn, checkUpdate } from "../zod/user";
 import Jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 
 const prisma = new PrismaClient();
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET: string = process.env.JWT_SECRET!;
+
+console.log("signup"+JWT_SECRET);
+
 
 interface RequestWithUserId extends Request {
   userId?: number;
 }
+interface body {
+  username?: string;
+  password?: string;
+  firstname?: string;
+  lastname?: string;
+}
 
 const handleSignUpReq = async (req: Request, res: Response) => {
-  const body = req.body;
+  const body: body = req.body;
+  console.log(req.body);
   // check the user input is valid or not
   const checked = checkSignUp.safeParse(body);
   if (!checked.success) {
@@ -20,12 +30,14 @@ const handleSignUpReq = async (req: Request, res: Response) => {
       message: "Email already taken / Incorrect inputs",
     });
   }
+
+  
   // check the username already exist or not
   const isUserExist = await prisma.user.findFirst({
     where: { username: body.username },
   });
 
-  if (isUserExist) {
+  if (isUserExist != null) {
     return res.status(411).json({
       message: "Email already taken / Incorrect inputs",
     });
@@ -34,9 +46,9 @@ const handleSignUpReq = async (req: Request, res: Response) => {
   //create user and store in database
   const dbUser = await prisma.user.create({
     data: {
-      username: body.username,
-      password: body.password,
-      firstname: body.firstname,
+      username: body.username!,
+      password: body.password!,
+      firstname: body.firstname!,
       lastname: body.lastname,
     },
   });
@@ -57,7 +69,7 @@ const handleSignUpReq = async (req: Request, res: Response) => {
 };
 
 const handleSignInReq = async (req: Request, res: Response) => {
-  const body = req.body;
+  const body: body = req.body;
   //check the user input is valid or not
   const { success } = checkSignIn.safeParse(body); // zod always return an object which contain success and data that's why i use {success} to direct catch "true or false".
   if (!success) {
@@ -69,12 +81,12 @@ const handleSignInReq = async (req: Request, res: Response) => {
   // check user is exist or not
   const isUserExist = await prisma.user.findFirst({
     where: {
-      username: body.username,
-      password: body.password,
+      username: body.username!,
+      password: body.password!,
     },
   });
 
-  if (!isUserExist) {
+  if (isUserExist == null) {
     return res.status(411).json({
       message: "Invalid username or password",
     });
@@ -97,7 +109,7 @@ const handleSignInReq = async (req: Request, res: Response) => {
 };
 
 const handleModifyReq = async (req: RequestWithUserId, res: Response) => {
-  const body = req.body;
+  const body: body = req.body;
   // check the valid input
   const { success } = checkUpdate.safeParse(body);
   if (!success) {
@@ -127,30 +139,27 @@ interface UserData {
   username: string;
   password: string;
   firstname: string;
-  lastname: string | null;
+  lastname: string;
 }
 
-const handleGetUserreq = async (
-  req: RequestWithUserId,
-  res: Response
-): Promise<void> => {
+const handleGetUserreq = async (req: RequestWithUserId, res: Response) => {
   try {
-    const userData: UserData | any = await prisma.user.findFirst({
+    const userData = await prisma.user.findFirst({
       where: { id: req.userId },
     });
 
-    if (!userData) {
+    if (userData == null) {
       res.status(404).json({ message: "User not found" });
+    } else {
+      res.status(200).json({
+        user: {
+          username: userData.username,
+          firstname: userData.firstname,
+          lastname: userData.lastname,
+          id: userData.id,
+        },
+      });
     }
-
-    res.status(200).json({
-      user: {
-        username: userData.username,
-        firstname: userData.firstname,
-        lastname: userData.lastname,
-        id: userData.id,
-      },
-    });
   } catch (error) {
     console.error("Error fetching user data:", error);
     res.status(500).json({ message: "Internal server error" });

@@ -6,7 +6,7 @@ const router = Router();
 
 router.get("/get",authMiddleware, handleGetUserreq);
 router.post("/signup", handleSignUpReq);
-router.post("/signup", handleSignInReq);
+router.post("/signin", handleSignInReq);
 router.post("/update", authMiddleware, handleModifyReq)
 
 

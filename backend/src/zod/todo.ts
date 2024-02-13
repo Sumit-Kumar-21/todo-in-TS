@@ -3,11 +3,11 @@ import { z } from "zod"
 
 const createTodo = z.object({
     title : z.string(),
-    description : z.string()
+    desc : z.string()
 })
 
 const updateTodo = z.object({
-    id : z.string()
+    id : z.number()
 })
 
 export {

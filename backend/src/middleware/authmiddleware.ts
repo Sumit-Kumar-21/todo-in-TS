@@ -1,7 +1,14 @@
 import jwt, {JwtPayload} from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+// import dotenv from 'dotenv';
 
-const JWT_SECRET:string = process.env.JWT_SECRET!;
+// dotenv.config();
+
+// const JWT_SECRET:string = process.env.JWT_SECRET!;
+const JWT_SECRET: string = process.env.JWT_SECRET!;
+
+console.log("hi "+JWT_SECRET);
+
 
 interface RequestWithUserId extends Request{
     userId?: number
